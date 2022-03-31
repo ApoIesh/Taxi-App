@@ -10,6 +10,7 @@ import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MFInitiatePayment, MFCurrencyISO, MFPaymentRequest, MFLanguage, MFProduct, MFCustomerAddress, MFExecutePaymentRequest, MFMobileCountryCodeISO, MFPaymentype, MFCardInfo } from 'myfatoorah-reactnative';
 import { rendererror } from '../config';
+import { navigate } from '../NavigationActions';
 
 
 const { width, height } = Dimensions.get('window');
@@ -29,8 +30,8 @@ class Map extends Component {
       userLocation: null,
       coordinates: [],
       modalVisible: false, agree: false,
-      selected_paymethod: null, paymentMethods: [], invoiceValue: '50',
-      email: '', payment_index: null,
+      selected_paymethod: null, paymentMethods: [], invoiceValue: '2000',
+      email: 'mohammed.hassan26895@gmail.com', payment_index: null,
     };
     this.mapView = null;
     this.navigate = this.props.navigation.navigate
@@ -39,10 +40,10 @@ class Map extends Component {
   goToPay() {
     // this.navigate("MFWebView")
     const {
-      selected_paymethod, paymentMethods, agree, invoiceValue, payment_index,
+      selected_paymethod, paymentMethods, agree, invoiceValue, payment_index, email,userId,
     } = this.state
     const value = invoiceValue
-    const data = { invoiceValue, selected_paymethod }
+    const data = { invoiceValue, selected_paymethod, email,userId }
     if (!agree) {
       rendererror(`${'agreeText'} ${'policyTerms'}`)
       return
@@ -53,8 +54,9 @@ class Map extends Component {
       if (value == 0) {
         rendererror('you have take trip')
       } else if (selected_paymethod > 0) {
+        navigate('Payments', { data, paymentMethods, invoiceValue: value, selectedIndex: payment_index, })
         // this.executeDirectPayment()
-        this.navigate("MFWebView")
+        // this.navigate("MFWebView")
       } else if (selected_paymethod == -1) {
         rendererror('choosePayment')
       }
@@ -313,7 +315,7 @@ class Map extends Component {
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
               <AntDesign
-              style={{alignSelf:'flex-end'}}
+                style={{ alignSelf: 'flex-end' }}
                 name='close'
                 color={'#000'}
                 size={wp(5)}

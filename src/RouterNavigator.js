@@ -4,6 +4,7 @@ import Home from "./component/Home";
 // import Subscribe from "./component/Subscribe";
 import ChatScreen from "./component/ChatScreen";
 import { MFWebView, MFSettings, MFTheme, MFEnvironment } from 'myfatoorah-reactnative';
+import Payments from "./Payments";
 
 const Stack = createNativeStackNavigator();
 
@@ -30,6 +31,11 @@ export default function RouterNavigator() {
             <Stack.Screen name="MFWebView"
                 component={MFWebView}
                 options={MFWebView.navigationOptions}
+            />
+             <Stack.Screen
+                name="Payments"
+                component={Payments}
+
             />
         </Stack.Navigator>
     );
