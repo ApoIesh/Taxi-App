@@ -19,16 +19,12 @@ class ChatScreen extends Component {
             message: null,
             chat: [],
             chatLocation: null
-
         };
         this.reference = database().ref('chats');
         this.userLocation = props?.route?.params
         this.navigate = this.props.navigation.navigate
 
     }
-
-
-
 
     async currentPossition() {
         const region = await getLocation()
@@ -44,8 +40,6 @@ class ChatScreen extends Component {
             })
         }
     }
-
-
 
     async onSend() {
         const { User_id, user, message } = this.state
@@ -121,14 +115,11 @@ class ChatScreen extends Component {
                                     }}
                                     ref={c => this.mapView = c}
                                     onPress={() => {
-                                        this.navigate("Home", ({latitude, longitude, latitudeDelta, longitudeDelta}))
+                                        this.navigate("Home", ({ latitude, longitude, latitudeDelta, longitudeDelta }))
                                     }}
                                 />
                             </View>
-
-                            : null
-                    }
-
+                            : null}
                 </View>
             )
         };
@@ -148,7 +139,6 @@ class ChatScreen extends Component {
         )
     };
 
-
     render() {
         const { message, data, chat, user } = this.state
         console.log('chat', chat);
@@ -162,7 +152,6 @@ class ChatScreen extends Component {
                     renderItem={this.renderItem}
                     keyExtractor={item => item.id}
                 />
-
                 <View style={{ flexDirection: 'row', alignItems: 'center', padding: wp(3) }}>
                     <TouchableOpacity onPress={() => this.onSend()} >
                         <Entypo
@@ -181,7 +170,6 @@ class ChatScreen extends Component {
                     <TouchableOpacity onPress={() => this.onSend()} >
                         <Text style={{ color: 'blue', fontSize: wp(4.5) }}>Send</Text>
                     </TouchableOpacity>
-
                 </View>
             </View>
         );

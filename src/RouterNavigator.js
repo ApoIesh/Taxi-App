@@ -5,7 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Home from "./component/Home";
 // import Subscribe from "./component/Subscribe";
 import ChatScreen from "./component/ChatScreen";
-
+import { MFWebView, MFSettings, MFTheme } from 'myfatoorah-reactnative';
 
 const Stack = createNativeStackNavigator();
 

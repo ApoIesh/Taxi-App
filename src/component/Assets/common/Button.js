@@ -19,7 +19,7 @@ const Button = ({ onPress, label }) => {
 const styles = StyleSheet.create({
     textStyle: {
         color: '#ffffff',
-        fontSize: wp(5),
+        fontSize: wp(4.5),
     },
     buttonStyle: {
         alignItems:'center',
@@ -28,10 +28,9 @@ const styles = StyleSheet.create({
         borderRadius:hp(6),
         backgroundColor: bluesky_color,
         width: wp(25),
-        height:hp(7),
-        marginVertical:hp(.5),
-        elevation:wp(0.9),
-        marginTop:wp(7)
+        height:hp(5),
+        marginVertical:hp(1),
+        elevation:wp(2.5),
 
     }
 });
