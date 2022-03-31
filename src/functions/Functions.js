@@ -13,7 +13,6 @@ const config = {
     distanceFilter: 0,
 };
 
-
 const hasLocationPermissionIOS = async () => {
     const openSetting = () => {
         Linking.openSettings().catch(() => {
@@ -78,7 +77,6 @@ const hasLocationPermission = async () => {
     }
     return false;
 };
-
 
 export const getLocation = async () => {
     const hasPermission = await hasLocationPermission();

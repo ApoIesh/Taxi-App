@@ -14,8 +14,6 @@ const Button = ({ onPress, label }) => {
     );
 };
 
-
-
 const styles = StyleSheet.create({
     textStyle: {
         color: '#ffffff',
@@ -34,10 +32,5 @@ const styles = StyleSheet.create({
 
     }
 });
-
-
-
-
-
 
 export { Button };

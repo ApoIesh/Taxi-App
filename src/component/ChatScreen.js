@@ -23,7 +23,6 @@ class ChatScreen extends Component {
         this.reference = database().ref('chats');
         this.userLocation = props?.route?.params
         this.navigate = this.props.navigation.navigate
-
     }
 
     async currentPossition() {

@@ -23,13 +23,6 @@ export const rendererror = (message) => {
 
 }
 
-
-
-
-
-
-
-
 function tConvert(time) {
   // Check correct time format and split into components
   time = time.toString().match(/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
@@ -54,8 +47,6 @@ export function handelDateTime(date) {
   const time = appendLeadingZeroes(newFormat.getHours()) + ':' + appendLeadingZeroes(newFormat.getMinutes()) /*+ ':' + appendLeadingZeroes(newFormat.getSeconds())*/
   return { time: time/*tConvert(time)*/, date: newDate }
 }
-
-
 
 export function formatTime(timer) {
   const getSeconds = `0${(timer % 60)}`.slice(-2)

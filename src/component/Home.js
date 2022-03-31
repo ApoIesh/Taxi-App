@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
-import { Dimensions, StyleSheet, View, Text, StatusBar, Modal, TouchableOpacity, FlatList, Image } from 'react-native';
+import { Dimensions, StyleSheet, View, Text, StatusBar, Modal, TouchableOpacity, FlatList, Image, TextInput } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import { getLocation, GOOGLE_MAPS_APIKEY } from '../functions/Functions';
 import { Button } from './Assets/common/Button';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import styles, { fontmedum, wp, hp, borderColor, Secondary_color, bluesky_color } from './Assets/style/styles';
+import styles, { fontmedum, wp, hp, borderColor, Secondary_color, bluesky_color, contentColor } from './Assets/style/styles';
 import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MFInitiatePayment, MFCurrencyISO, MFPaymentRequest, MFLanguage, MFProduct, MFCustomerAddress } from 'myfatoorah-reactnative';
+import { MFInitiatePayment, MFCurrencyISO, MFPaymentRequest, MFLanguage, MFProduct, MFCustomerAddress, MFExecutePaymentRequest, MFMobileCountryCodeISO, MFPaymentype, MFCardInfo } from 'myfatoorah-reactnative';
+import { rendererror } from '../config';
 
 
 const { width, height } = Dimensions.get('window');
@@ -21,16 +22,43 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 class Map extends Component {
   constructor(props) {
     super(props);
-    console.log(props);
+    // console.log(auth()._user._user.uid);
     this.state = {
+      userId: auth()._user._user.uid,
       region: {},
       userLocation: null,
       coordinates: [],
-      modalVisible: true, agree: false,
-      selected_paymethod: null, paymentMethods: [], prise: '50'
+      modalVisible: false, agree: false,
+      selected_paymethod: null, paymentMethods: [], invoiceValue: '50',
+      email: '', payment_index: null,
     };
     this.mapView = null;
     this.navigate = this.props.navigation.navigate
+    this.initiatePayments()
+  }
+  goToPay() {
+    // this.navigate("MFWebView")
+    const {
+      selected_paymethod, paymentMethods, agree, invoiceValue, payment_index,
+    } = this.state
+    const value = invoiceValue
+    const data = { invoiceValue, selected_paymethod }
+    if (!agree) {
+      rendererror(`${'agreeText'} ${'policyTerms'}`)
+      return
+    } if (!paymentMethods[payment_index] && !selected_paymethod && value > 0) {
+      rendererror('choosePayment')
+    }
+    else {
+      if (value == 0) {
+        rendererror('you have take trip')
+      } else if (selected_paymethod > 0) {
+        // this.executeDirectPayment()
+        this.navigate("MFWebView")
+      } else if (selected_paymethod == -1) {
+        rendererror('choosePayment')
+      }
+    }
   }
   async componentDidMount() {
     this.sign_in()
@@ -42,11 +70,11 @@ class Map extends Component {
     auth()
       .signInAnonymously()
       .then(() => {
-        console.log('User signed in anonymously',);
+        // console.log('User signed in anonymously',);
       })
       .catch(error => {
         if (error.code === 'auth/operation-not-allowed') {
-          console.log('Enable anonymous in your firebase console.');
+          // console.log('Enable anonymous in your firebase console.');
         }
         console.error(error);
       });
@@ -98,8 +126,6 @@ class Map extends Component {
     this.setState({ modalVisible: visible });
   }
 
-
- 
   render_ = ({ item, index, Item }) => {
     const { selected_paymethod } = this.state
     // console.log(item);
@@ -137,30 +163,166 @@ class Map extends Component {
       />
     )
   };
+  initiatePayments() {
+    let initiateRequest = new MFInitiatePayment(50, MFCurrencyISO.KUWAIT_KWD)
+    MFPaymentRequest.sharedInstance.initiatePayment(initiateRequest, MFLanguage.ENGLISH, (response: Response) => {
+      if (response.getError()) {
+        alert('error: ' + response.getError().error);
+      }
+      else {
+        let paymentMethods = response.getPaymentMethods();
+        this.setState({
+          paymentMethods: [...paymentMethods, {
+            PaymentMethodId: -1, PaymentMethodAr: 'bankTransfer', PaymentMethodEn: 'bankTransfer'
+          }]
+        })
+      }
+    });
+  }
+  executeResquestJson() {
+    const {
+      selected_paymethod, paymentMethods, email, invoiceValue, payment_index,
+    } = this.state
+    let request = new MFExecutePaymentRequest(parseFloat(invoiceValue), paymentMethods[payment_index].PaymentMethodId);
+    request.customerEmail = email ? email : userRegister.email // must be email
+    request.customerMobile = '0512345678';
+    request.customerCivilId = "";
+    let address = new MFCustomerAddress("ddd", "sss", "sss", "sss", "sss");
+    request.customerAddress = address;
+    request.customerReference = "";
+    request.language = "en";
+    request.mobileCountryCode = MFMobileCountryCodeISO.KUWAIT;
+    request.displayCurrencyIso = MFCurrencyISO.KUWAIT_KWD;
+    // var productList = []
+    // var product = new MFProduct("ABC", 1.887, 1)
+    // productList.push(product)
+    // request.invoiceItems = productList
+    return request;
+  }
+  getCardInfo() {
+    let cardExpiryMonth = '05'
+    let cardExpiryYear = '21'
+    let cardSecureCode = '100'
+    let paymentType = MFPaymentype.CARD
+    // let paymentType = MFPaymentype.TOKEN
+    let saveToken = false
+    let card = new MFCardInfo('5123450000000008', cardExpiryMonth, cardExpiryYear, cardSecureCode, paymentType, saveToken)
+    card.bypass = true
+    return card
+  }
+  executeDirectPayment() {
+    let request = this.executeResquestJson();
+    let cardInfo = this.getCardInfo()
+    MFPaymentRequest.sharedInstance.executeDirectPayment(this.props.navigation, request, cardInfo, MFLanguage.ENGLISH, (response: Response) => {
 
+      if (response.getError()) {
+        alert('error: ' + response.getError().error)
+      }
+      else {
+        // alert(response.getBodyString())
+        var paymentStatusResponse = response.getBodyJson().getPaymentStatusResponse;
+        var invoiceId = paymentStatusResponse.InvoiceId
+        alert('success with Invoice Id: ' + invoiceId + ', Invoice status: ' + paymentStatusResponse.InvoiceStatus);
+      }
+    });
+  }
 
   render() {
-    const { paymentMethods, prise, agree } = this.state
+    const { paymentMethods, invoiceValue, agree, email, modalVisible } = this.state
+    // console.log(agree);
     return (
       <View style={styles.container}>
         <StatusBar hidden />
-
-
+        <MapView
+          initialRegion={
+            this.props.route.params ?
+              {
+                latitude: this.props.route.params.latitude,
+                longitude: this.props.route.params.longitude,
+                latitudeDelta: 0.00922,
+                longitudeDelta: 0.00421,
+              } :
+              {
+                latitude: LATITUDE,
+                longitude: LONGITUDE,
+                latitudeDelta: LATITUDE_DELTA,
+                longitudeDelta: LONGITUDE_DELTA,
+              }}
+          onRegionChange={() => this.currentPossition()}
+          rotateEnabled={true}
+          pitchEnabled={true}
+          provider={PROVIDER_GOOGLE}
+          showsIndoorLevelPicker={true}
+          followsUserLocation={true}
+          showsMyLocationButton={true}
+          loadingEnabled={true}
+          loadingIndicatorColor={bluesky_color}
+          showsUserLocation={true}
+          style={StyleSheet.absoluteFill}
+          ref={c => this.mapView = c}
+          onPress={this.onMapPress}
+        >
+          {this.props.route.params ?
+            <Marker
+              coordinate={{
+                latitude: this.props.route.params.latitude,
+                longitude: this.props.route.params.longitude,
+                latitudeDelta: 0.00922,
+                longitudeDelta: 0.00421,
+              }}
+              description={'description test'}
+              title={'test'}
+            />
+            : this.state.coordinates.map((coordinate, index) =>
+              <Marker
+                key={`coordinate_${index}`}
+                coordinate={coordinate}
+                description={'description test'}
+                title={'test'}
+              />
+            )}
+          {(this.state.coordinates.length >= 0) && (
+            <MapViewDirections
+              origin={this.state.userLocation}
+              waypoints={(this.state.coordinates.length > 0) ? this.state.coordinates.slice(1, -1) : undefined}
+              destination={this.state.coordinates[this.state.coordinates.length - 1]}
+              apikey={GOOGLE_MAPS_APIKEY}
+              strokeWidth={5}
+              strokeColor={bluesky_color}
+              optimizeWaypoints={true}
+              splitWaypoints={true}
+              onReady={result => {
+                this.mapView.fitToCoordinates(result.coordinates, {
+                  edgePadding: {
+                    right: (width / 20),
+                    bottom: (height / 20),
+                    left: (width / 20),
+                    top: (height / 20),
+                  }
+                });
+              }}
+              onError={(errorMessage) => {
+                console.log('GOT AN ERROR', errorMessage);
+              }} />)}
+        </MapView>
         <Modal animationType="fade"
           transparent={true}
           hardwareAccelerated={false}
           visible={this.state.modalVisible}
-          onRequestClose={() => {
-            Alert.alert("Modal has been closed.");
-            this.setModalVisible(!modalVisible);
-          }} >
+        >
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
+              <AntDesign
+              style={{alignSelf:'flex-end'}}
+                name='close'
+                color={'#000'}
+                size={wp(5)}
+                onPress={() => this.setModalVisible(!modalVisible)}
+              />
               <Text style={styles.modalText}>Choose payment method</Text>
               <View style={{ flexDirection: 'row' }}>
-                <Text style={styles.priceText}>{prise}  </Text>
+                <Text style={styles.priceText}>{invoiceValue}  </Text>
                 <Text style={styles.priceText_}>Trip costs</Text>
-
               </View>
               <FlatList
                 showsHorizontalScrollIndicator={false}
@@ -179,6 +341,14 @@ class Map extends Component {
                 renderItem={this.render_}
                 keyExtractor={(item, index) => index.toString()}
               />
+              <View style={styles.viewStyleSingUp}>
+                <Text style={{ color: contentColor }} >user email</Text>
+                <TextInput
+                  value={email}
+                  onChangeText={(email) => this.setState({ email })}
+                  keyboardType='default'
+                />
+              </View>
               <TouchableOpacity
                 onPress={() => this.setState({ agree: !agree })}
                 activeOpacity={.9}
@@ -197,22 +367,18 @@ class Map extends Component {
                   />
                     : null}
                 </View>
-
                 <Text style={{
                   ...styles.textInput, marginStart: wp(2)
                 }}>Agree to the terms and conditions</Text>
 
               </TouchableOpacity>
               <View style={{ alignItems: 'center' }}>
-                <Button label={'Payment'} />
+                <Button label={'Payment'}
+                  onPress={this.goToPay.bind(this)} />
               </View>
             </View>
           </View>
-
-
         </Modal>
-
-
         <View style={styles.buttons}>
           <Button label={'Pay'} onPress={() => this.setModalVisible()} />
           <Button label={'Start'} />

@@ -5,17 +5,14 @@ import {
   heightPercentageToDP,
 } from 'react-native-responsive-screen';
 
-
 export const wp = widthPercentageToDP;
 export const hp = heightPercentageToDP;
-
 
 // fonts
 export const fontLight = 'DIN NEXT™ ARABIC LIGHT';
 export const fontRegular = 'DIN NEXT™ ARABIC REGULAR';
 export const fontmedum = 'DIN Next LT W23 Medium';
 export const fontBold = 'DIN NEXT™ ARABIC BOLD';
-
 
 export const black_color = "#000"
 export const white_color = "#fff"
@@ -27,15 +24,12 @@ export const Primary_Purble_color = "#482796"
 export const Secondary_color = "#b35f9a"
 export const Hover_color = "#efebfa"
 
-
 export const contentColor = '#8b8989'
 export const borderColor = '#eaeaff'
 export const textInputColor = '#000'
 export const vectorIconColor = '#b8b8d2'
 
-
 const styles = StyleSheet.create({
-
   //First
   container: {
     flex: 1,
@@ -118,7 +112,7 @@ centeredView: {
     padding: wp(3),
     // alignItems: "center",
     width: wp(75),
-    height: hp(75),
+    // height: hp(50),
     shadowColor: "#000",
     shadowOffset: {
       width: wp(2),
@@ -140,78 +134,11 @@ centeredView: {
     color:black_color,
     alignSelf:'flex-end'
   },
+  viewStyleSingUp:{
+    borderBottomWidth: wp(0.2),
+    borderColor: '#ccc',
+    width: wp(60),
+  }
 
 });
 export default styles;
-{/* <MapView
-initialRegion={
-  this.props.route.params ?
-    {
-      latitude: this.props.route.params.latitude,
-      longitude: this.props.route.params.longitude,
-      latitudeDelta: 0.00922,
-      longitudeDelta: 0.00421,
-    } :
-    {
-      latitude: LATITUDE,
-      longitude: LONGITUDE,
-      latitudeDelta: LATITUDE_DELTA,
-      longitudeDelta: LONGITUDE_DELTA,
-    }}
-onRegionChange={() => this.currentPossition()}
-rotateEnabled={true}
-pitchEnabled={true}
-provider={PROVIDER_GOOGLE}
-showsIndoorLevelPicker={true}
-followsUserLocation={true}
-showsMyLocationButton={true}
-loadingEnabled={true}
-loadingIndicatorColor={bluesky_color}
-showsUserLocation={true}
-style={StyleSheet.absoluteFill}
-ref={c => this.mapView = c}
-onPress={this.onMapPress}
->
-{this.props.route.params ?
-  <Marker
-    coordinate={{
-      latitude: this.props.route.params.latitude,
-      longitude: this.props.route.params.longitude,
-      latitudeDelta: 0.00922,
-      longitudeDelta: 0.00421,
-    }}
-    description={'description test'}
-    title={'test'}
-  />
-  : this.state.coordinates.map((coordinate, index) =>
-    <Marker
-      key={`coordinate_${index}`}
-      coordinate={coordinate}
-      description={'description test'}
-      title={'test'}
-    />
-  )}
-{(this.state.coordinates.length >= 0) && (
-  <MapViewDirections
-    origin={this.state.userLocation}
-    waypoints={(this.state.coordinates.length > 0) ? this.state.coordinates.slice(1, -1) : undefined}
-    destination={this.state.coordinates[this.state.coordinates.length - 1]}
-    apikey={GOOGLE_MAPS_APIKEY}
-    strokeWidth={5}
-    strokeColor={bluesky_color}
-    optimizeWaypoints={true}
-    splitWaypoints={true}
-    onReady={result => {
-      this.mapView.fitToCoordinates(result.coordinates, {
-        edgePadding: {
-          right: (width / 20),
-          bottom: (height / 20),
-          left: (width / 20),
-          top: (height / 20),
-        }
-      });
-    }}
-    onError={(errorMessage) => {
-      console.log('GOT AN ERROR', errorMessage);
-    }} />)}
-</MapView> */}
