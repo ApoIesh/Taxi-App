@@ -23,9 +23,9 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 class Map extends Component {
   constructor(props) {
     super(props);
-    // console.log(auth()._user._user.uid);
+    console.log(props);
     this.state = {
-      userId: auth()._user._user.uid,
+      userId: auth()?._user?._user?.uid,
       region: {},
       userLocation: null,
       coordinates: [],
@@ -36,14 +36,17 @@ class Map extends Component {
     this.mapView = null;
     this.navigate = this.props.navigation.navigate
     this.initiatePayments()
+    this.currentPossition()
+
   }
+  
   goToPay() {
     // this.navigate("MFWebView")
     const {
-      selected_paymethod, paymentMethods, agree, invoiceValue, payment_index, email,userId,
+      selected_paymethod, paymentMethods, agree, invoiceValue, payment_index, email, userId,
     } = this.state
     const value = invoiceValue
-    const data = { invoiceValue, selected_paymethod, email,userId }
+    const data = { invoiceValue, selected_paymethod, email, userId }
     if (!agree) {
       rendererror(`${'agreeText'} ${'policyTerms'}`)
       return
@@ -62,10 +65,10 @@ class Map extends Component {
       }
     }
   }
+
   async componentDidMount() {
     this.sign_in()
     this.setUser()
-    this.currentPossition()
   }
 
   sign_in() {
@@ -81,11 +84,13 @@ class Map extends Component {
         console.error(error);
       });
   }
+
   setUser() {
     auth().onAuthStateChanged((user) => {
       this._storeData(user)
     });
   }
+
   _storeData = async (user) => {
     // console.log('sss', user);
     try {
@@ -124,6 +129,7 @@ class Map extends Component {
     const { userLocation } = this.state
     this.navigate("ChatScreen", userLocation)
   }
+
   setModalVisible = (visible) => {
     this.setState({ modalVisible: visible });
   }
@@ -165,6 +171,7 @@ class Map extends Component {
       />
     )
   };
+
   initiatePayments() {
     let initiateRequest = new MFInitiatePayment(50, MFCurrencyISO.KUWAIT_KWD)
     MFPaymentRequest.sharedInstance.initiatePayment(initiateRequest, MFLanguage.ENGLISH, (response: Response) => {
@@ -181,53 +188,8 @@ class Map extends Component {
       }
     });
   }
-  executeResquestJson() {
-    const {
-      selected_paymethod, paymentMethods, email, invoiceValue, payment_index,
-    } = this.state
-    let request = new MFExecutePaymentRequest(parseFloat(invoiceValue), paymentMethods[payment_index].PaymentMethodId);
-    request.customerEmail = email ? email : userRegister.email // must be email
-    request.customerMobile = '0512345678';
-    request.customerCivilId = "";
-    let address = new MFCustomerAddress("ddd", "sss", "sss", "sss", "sss");
-    request.customerAddress = address;
-    request.customerReference = "";
-    request.language = "en";
-    request.mobileCountryCode = MFMobileCountryCodeISO.KUWAIT;
-    request.displayCurrencyIso = MFCurrencyISO.KUWAIT_KWD;
-    // var productList = []
-    // var product = new MFProduct("ABC", 1.887, 1)
-    // productList.push(product)
-    // request.invoiceItems = productList
-    return request;
-  }
-  getCardInfo() {
-    let cardExpiryMonth = '05'
-    let cardExpiryYear = '21'
-    let cardSecureCode = '100'
-    let paymentType = MFPaymentype.CARD
-    // let paymentType = MFPaymentype.TOKEN
-    let saveToken = false
-    let card = new MFCardInfo('5123450000000008', cardExpiryMonth, cardExpiryYear, cardSecureCode, paymentType, saveToken)
-    card.bypass = true
-    return card
-  }
-  executeDirectPayment() {
-    let request = this.executeResquestJson();
-    let cardInfo = this.getCardInfo()
-    MFPaymentRequest.sharedInstance.executeDirectPayment(this.props.navigation, request, cardInfo, MFLanguage.ENGLISH, (response: Response) => {
 
-      if (response.getError()) {
-        alert('error: ' + response.getError().error)
-      }
-      else {
-        // alert(response.getBodyString())
-        var paymentStatusResponse = response.getBodyJson().getPaymentStatusResponse;
-        var invoiceId = paymentStatusResponse.InvoiceId
-        alert('success with Invoice Id: ' + invoiceId + ', Invoice status: ' + paymentStatusResponse.InvoiceStatus);
-      }
-    });
-  }
+
 
   render() {
     const { paymentMethods, invoiceValue, agree, email, modalVisible } = this.state
@@ -237,10 +199,10 @@ class Map extends Component {
         <StatusBar hidden />
         <MapView
           initialRegion={
-            this.props.route.params ?
+            this?.props?.route?.params?.latitude ?
               {
-                latitude: this.props.route.params.latitude,
-                longitude: this.props.route.params.longitude,
+                latitude: this?.props?.route?.params?.latitude,
+                longitude: this?.props?.route?.params?.longitude,
                 latitudeDelta: 0.00922,
                 longitudeDelta: 0.00421,
               } :
@@ -264,11 +226,11 @@ class Map extends Component {
           ref={c => this.mapView = c}
           onPress={this.onMapPress}
         >
-          {this.props.route.params ?
+          {this?.props?.route?.params?.latitude ?
             <Marker
               coordinate={{
-                latitude: this.props.route.params.latitude,
-                longitude: this.props.route.params.longitude,
+                latitude: this?.props?.route?.params?.latitude,
+                longitude: this?.props?.route?.params?.longitude,
                 latitudeDelta: 0.00922,
                 longitudeDelta: 0.00421,
               }}

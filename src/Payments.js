@@ -23,13 +23,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 import { Main_Button } from './component/Assets/common/Main_Button';
-import { reset } from './NavigationActions';
 
 
 class Payments extends Component {
     constructor(props) {
         const data = props.route.params
-        console.log(data);
+        // console.log(data);
         super(props)
         this.state = {
             loading: false,
@@ -51,34 +50,17 @@ class Payments extends Component {
         if (paymentMethods[selectedIndex].IsDirectPayment == false) {
             this.setState({ disabledPay: false })
             this.executePayment();
-            console.log("bbbbb");
-
         }
 
     }
 
-    //region HANDLERS
-    onExecutePaymentButtonClickHandler = () => {
-        const { paymentMethods, selectedIndex } = this.state
-        if (paymentMethods[selectedIndex].IsDirectPayment) {
-            this.executeDirectPayment()
-        } else {
-            this.executePayment();
-        }
-    };
+
 
     onExecuteDirectPaymentButtonClickHandler = () => {
         this.executeDirectPayment();
     };
 
-    onExecuteRecurringPaymentButtonClickHandler = () => {
-        this.executeRecurringPayment();
-    };
 
-    onCancelRecurringPaymentButtonClickHandler = () => {
-        this.cancelRucrring();
-    };
-    //endregion
     render() {
         const { isDirectPayment, selectedIndex, disabledPay } = this.state
         const { navigation } = this.props
@@ -102,41 +84,14 @@ class Payments extends Component {
         );
     }
 
-    //endregion
-    _onChange = (form) => {
-        this.setState({
-            cardNumber: form.values.number,
-            expiry: form.values.expiry,
-            cvv: form.values.cvc,
-            disabledPay: form.valid ? false : true
-        })
-    };
-
     async onSuccess(payment) {
+        const apiToken = await AsyncStorage.getItem('UserId')
+        const data = this.props.route.params.data
 
-        console.log("eeeeeee", payment);
-
-
-
-
+        this.props.navigation.navigate("Home", apiToken, { ...data, payment })
+        console.log("payment", payment, data);
     }
 
-
-
-    //region RENDER METHODS
-
-
-
-    //endregion
-
-    //region HELPER METHODS
-    showLoading() {
-        this.props.changeValue({ loading: true })
-
-    }
-    hideLoading() {
-        this.props.changeValue({ loading: false })
-    }
     getCardInfo() {
         const { cvv, cardNumber, expiry, email } = this.state
         const { userRegister, user } = this.props
@@ -169,14 +124,10 @@ class Payments extends Component {
         return request;
     }
 
-    //endregion
-
-    //region myfaootrah-react-native methods
-
     executePayment() {
         let request = this.executeResquestJson();
+        // console.log("77", request);
         MFPaymentRequest.sharedInstance.executePayment(this.props.navigation, request, MFLanguage.ENGLISH, (response: Response) => {
-            this.hideLoading()
             if (response.getError()) {
                 rendererror(response.getError().error)
             } else {
@@ -184,62 +135,7 @@ class Payments extends Component {
                 var invoiceId = response.getInvoiceId();
                 var paymentStatusResponse = response.getBodyJson().Data;
                 this.onSuccess(paymentStatusResponse)
-                console.log("sdsdsssssss");
-            }
-        });
-    }
-    executeDirectPayment() {
-        let request = this.executeResquestJson();
-        let cardInfo = this.getCardInfo()
-        this.showLoading()
-        MFPaymentRequest.sharedInstance.executeDirectPayment(this.props.navigation, request, cardInfo, MFLanguage.ENGLISH, (response: Response) => {
-            this.hideLoading()
-            if (response.getError()) {
-                rendererror(response.getError().error)
-            } else {
-                var paymentStatusResponse = response.getBodyJson().getPaymentStatusResponse;
-
-                var invoiceId = paymentStatusResponse.InvoiceId
-
-                this.onSuccess(paymentStatusResponse)
-                console.log("aaaaaaaa");
-
-            }
-        });
-    }
-
-    executeRecurringPayment() {
-        let request = this.executeResquestJson();
-        let cardInfo = this.getCardInfo()
-        this.showLoading()
-        MFPaymentRequest.sharedInstance.executeRecurringPayment(this.props.navigation, request, cardInfo, 10, MFLanguage.ENGLISH, (response: Response) => {
-            this.hideLoading()
-            if (response.getError()) {
-                rendererror(response.getError().error)
-            }
-            else {
-                rendererror(response.getBodyString())
-                var cardInfoResponse = response.getBodyJson().cardInfoResponse
-                setRecurringId(cardInfoResponse.RecurringId)
-                var paymentStatusResponse = response.getBodyJson().getPaymentStatusResponse;
-                var invoiceId = paymentStatusResponse.InvoiceId
-
-                this.onSuccess(paymentStatusResponse)
-                console.log("fffffff");
-
-            }
-        });
-    }
-    cancelRucrring() {
-        this.showLoading()
-        const { recurringId } = this.state
-        MFPaymentRequest.sharedInstance.cancelRecurringPayment(recurringId, MFLanguage.ENGLISH, (response: Response) => {
-            this.hideLoading()
-            if (response.getError()) {
-                rendererror(response.getError().error)
-            }
-            else {
-                rendererror(response.getBodyString())
+                // console.log('aa', paymentStatusResponse);
             }
         });
     }
@@ -253,12 +149,11 @@ class Payments extends Component {
             }
             else {
                 rendererror(response.getBodyString())
+                // console.log('zz', response);
             }
         });
     }
-    //endregion
 }
-
 
 
 export default Payments;
